@@ -1,0 +1,87 @@
+# ============================================================
+# AMTP Server — Docker Compose
+# Usage:
+#   docker compose up             # development (hot-reload via ts-node)
+#   docker compose -f docker-compose.yml up  # production (pre-built image)
+# ============================================================
+
+services:
+  # ---- Production runtime ----
+  amtp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: amtp-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      AMTP_PORT: 3000
+      AMTP_HOST: 0.0.0.0
+      AMTP_TRUSTED_ORIGINS: ${AMTP_TRUSTED_ORIGINS:-}
+      AMTP_ENABLE_RATE_LIMIT: "true"
+      AMTP_ENABLE_SECURITY_HEADERS: "true"
+      AMTP_CSRF_PROTECTION: "true"
+      AMTP_LOG_LEVEL: ${AMTP_LOG_LEVEL:-info}
+    # Production: mount only named volumes (no source code mount)
+    volumes:
+      - amtp-logs:/app/logs
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/',(r)=>{process.exit(r.statusCode===200?0:1)})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - amtp-net
+
+  # ---- Development runtime (hot-reload via ts-node) ----
+  amtp-server-dev:
+    image: node:20-alpine
+    container_name: amtp-server-dev
+    working_dir: /app
+    command: sh -c "npm install && npx ts-node src/server/examples/basic-server.ts"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./:/app
+      - amtp-dev-node-modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      AMTP_HOST: 0.0.0.0
+      AMTP_PORT: 3000
+    networks:
+      - amtp-net
+    profiles:
+      - dev
+
+  # ---- Optional: Redis for distributed session store & rate-limit ----
+  redis:
+    image: redis:7-alpine
+    container_name: amtp-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
+    volumes:
+      - amtp-redis-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp
+    networks:
+      - amtp-net
+    profiles:
+      - redis
+
+# ---- Named volumes ----
+volumes:
+  amtp-logs:
+  amtp-dev-node-modules:
+  amtp-redis-data:
+
+# ---- Network ----
+networks:
+  amtp-net:
+    driver: bridge

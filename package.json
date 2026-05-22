@@ -1,0 +1,90 @@
+{
+  "name": "@amtp/protocol",
+  "version": "1.0.0",
+  "description": "AMTP: Agent Markdown Transfer Protocol - HTTP for the Agentic Web",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "USAGE_GUIDE.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "type-check": "tsc --noEmit",
+    "prepublishOnly": "npm run validate",
+    "validate": "npm run type-check && npm run build && npm test",
+    "security-audit": "npm audit",
+    "server": "ts-node src/server/examples/basic-server.ts",
+    "server:saas": "ts-node src/server/examples/saas-dashboard-server.ts",
+    "client": "ts-node src/client/examples/basic-client.ts",
+    "crawler": "ts-node src/crawler/examples/basic-crawler.ts",
+    "docs": "typedoc --out docs src/",
+    "bench": "ts-node bench/bench.ts",
+    "amtp": "ts-node bin/amtp.ts"
+  },
+  "keywords": [
+    "amtp",
+    "protocol",
+    "agents",
+    "markdown",
+    "http",
+    "web",
+    "api",
+    "semantic",
+    "rfc"
+  ],
+  "author": "AMTP Contributors",
+  "license": "MIT",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/compression": "^1.8.1",
+    "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.0.0",
+    "@types/supertest": "^7.2.0",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "bcryptjs": "^2.4.3",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
+    "eslint": "^8.40.0",
+    "fastify": "^5.8.5",
+    "jest": "^29.5.0",
+    "jsonwebtoken": "^9.0.0",
+    "supertest": "^7.2.2",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.24.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amtp/protocol"
+  },
+  "bugs": {
+    "url": "https://github.com/amtp/protocol/issues"
+  },
+  "homepage": "https://github.com/amtp/protocol#readme"
+}

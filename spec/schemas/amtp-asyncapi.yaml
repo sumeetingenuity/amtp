@@ -1,0 +1,66 @@
+asyncapi: 3.0.0
+info:
+  title: AMTP Streaming API
+  description: |
+    AsyncAPI specification for AMTP real-time streaming updates (SSE / WebSocket).
+    Used for order status, notifications, live data, etc.
+  version: 1.1.0
+
+servers:
+  sse:
+    host: example.com
+    protocol: https
+    protocolVersion: '1.1'
+    description: Server-Sent Events endpoint for AMTP updates
+
+channels:
+  /api/amtp/stream/{topic}:
+    address: /api/amtp/stream/{topic}
+    messages:
+      StreamUpdate:
+        $ref: '#/components/messages/StreamUpdate'
+    parameters:
+      topic:
+        description: The stream topic (e.g. order, workspace, search)
+        schema:
+          type: string
+
+operations:
+  receiveUpdate:
+    action: receive
+    channel:
+      $ref: '#/channels/~1api~1amtp~1stream~1{topic}'
+    messages:
+      - $ref: '#/components/messages/StreamUpdate'
+
+components:
+  messages:
+    StreamUpdate:
+      name: StreamUpdate
+      title: AMTP Stream Event
+      summary: A real-time update for agents
+      contentType: text/event-stream
+      payload:
+        type: object
+        properties:
+          event:
+            type: string
+            examples: [order_updated, workspace_changed, new_message]
+          data:
+            type: object
+            additionalProperties: true
+          timestamp:
+            type: string
+            format: date-time
+        required:
+          - event
+          - data
+
+  schemas:
+    StreamEvent:
+      type: object
+      properties:
+        event:
+          type: string
+        data:
+          type: object

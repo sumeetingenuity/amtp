@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://amtp.dev/schemas/amtp-document.schema.json",
+  "title": "AMTP Document",
+  "description": "Canonical JSON Schema for an AMTP (Agent Markdown Transfer Protocol) document. This is the machine-readable form of an AMTP page.",
+  "type": "object",
+  "required": ["type", "version", "title", "path", "nodes", "actions", "forms", "links", "metadata"],
+  "properties": {
+    "type": {
+      "const": "document"
+    },
+    "version": {
+      "type": "string",
+      "enum": ["1.0", "1.1"]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "path": {
+      "type": "string",
+      "pattern": "^/.*$"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/MarkdownNode"
+      }
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Action"
+      }
+    },
+    "forms": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Form"
+      }
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Link"
+      }
+    },
+    "metadata": {
+      "$ref": "#/$defs/DocumentMetadata"
+    },
+    "structured_data": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "$defs": {
+    "MarkdownNode": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "document", "heading", "paragraph", "blockquote", "list", "list_item",
+            "code_block", "inline_code", "bold", "italic", "link", "image",
+            "table", "thematic_break", "action", "form", "metadata", "structured_data"
+          ]
+        },
+        "content": { "type": "string" },
+        "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+        "children": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/MarkdownNode" }
+        },
+        "url": { "type": "string" },
+        "alt": { "type": "string" },
+        "title": { "type": "string" },
+        "metadata": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "Action": {
+      "type": "object",
+      "required": ["id", "method", "endpoint"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "method": { "type": "string", "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"] },
+        "endpoint": { "type": "string", "pattern": "^/.*$" },
+        "requiresAuthentication": { "type": "boolean" },
+        "idempotent": { "type": "boolean" },
+        "parameters": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ActionParameter" }
+        }
+      }
+    },
+    "ActionParameter": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "required": { "type": "boolean" },
+        "description": { "type": "string" }
+      }
+    },
+    "Form": {
+      "type": "object",
+      "required": ["id", "action", "method", "endpoint", "fields"],
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "method": { "type": "string" },
+        "endpoint": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FormField" }
+        }
+      }
+    },
+    "FormField": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["text", "email", "password", "number", "select", "checkbox", "radio", "textarea", "hidden"]
+        },
+        "label": { "type": "string" },
+        "required": { "type": "boolean" },
+        "default": { "type": ["string", "number", "boolean"] },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["value", "label"],
+            "properties": {
+              "value": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "placeholder": { "type": "string" },
+        "maxLength": { "type": "integer" }
+      }
+    },
+    "Link": {
+      "type": "object",
+      "required": ["text", "url", "type"],
+      "properties": {
+        "text": { "type": "string" },
+        "url": { "type": "string" },
+        "type": {
+          "type": "string",
+          "enum": ["internal", "external", "action", "navigation"]
+        },
+        "title": { "type": "string" },
+        "method": { "type": "string" }
+      }
+    },
+    "DocumentMetadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "properties": {
+        "pageId": { "type": "string" },
+        "pageType": { "type": "string" },
+        "version": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "cacheControl": { "type": "string" }
+      }
+    }
+  }
+}

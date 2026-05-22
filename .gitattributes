@@ -1,0 +1,7 @@
+* text=auto
+*.ts text diff=typescript
+*.json text
+*.md text
+*.yml text
+*.yaml text
+*.sh text eol=lf

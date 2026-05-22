@@ -1,0 +1,207 @@
+openapi: 3.1.0
+info:
+  title: AMTP Protocol API
+  description: |
+    Official OpenAPI specification for the Agent Markdown Transfer Protocol (AMTP).
+    This describes the HTTP endpoints, request/response formats, and how AMTP documents,
+    actions, forms, and batch operations are exposed over HTTP.
+  version: 1.1.0
+  contact:
+    name: AMTP Contributors
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://example.com
+    description: Production AMTP server
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /{path}:
+    get:
+      summary: Fetch an AMTP document
+      description: |
+        Retrieve a semantic AMTP document. Use `Accept: text/amtp+markdown` for the
+        machine-optimized format, or `Accept: text/html` for human rendering.
+      operationId: getDocument
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+            example: /products/macbook-pro-14
+        - name: cursor
+          in: query
+          description: Cursor for paginated results (v1.1+)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful AMTP document or HTML fallback
+          content:
+            text/amtp+markdown:
+              schema:
+                $ref: './amtp-document.schema.json'
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AMTPDocument'
+            text/html:
+              schema:
+                type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/amtp/action:
+    post:
+      summary: Execute a single action
+      operationId: executeAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AMTPActionRequest'
+      responses:
+        '200':
+          description: Action result (can be an AMTP document or structured response)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionResult'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /api/amtp/batch:
+    post:
+      summary: Execute multiple actions in one request (v1.1+)
+      operationId: executeBatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AMTPBatchRequest'
+      responses:
+        '200':
+          description: Batch execution results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AMTPBatchResponse'
+
+components:
+  schemas:
+    AMTPDocument:
+      $ref: './amtp-document.schema.json'
+
+    AMTPActionRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          example: BUY
+        parameters:
+          type: object
+          additionalProperties: true
+        sessionId:
+          type: string
+        requestId:
+          type: string
+
+    ActionResult:
+      type: object
+      properties:
+        actionId:
+          type: string
+        status:
+          type: string
+          enum: [success, error]
+        result:
+          type: object
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+
+    AMTPBatchRequest:
+      type: object
+      required:
+        - actions
+      properties:
+        batchId:
+          type: string
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/BatchActionItem'
+        options:
+          type: object
+          properties:
+            atomic:
+              type: boolean
+            continueOnError:
+              type: boolean
+            timeoutMs:
+              type: integer
+
+    BatchActionItem:
+      type: object
+      required:
+        - requestId
+        - action
+      properties:
+        requestId:
+          type: string
+        action:
+          type: string
+        parameters:
+          type: object
+
+    AMTPBatchResponse:
+      type: object
+      properties:
+        batchId:
+          type: string
+        status:
+          type: string
+          enum: [success, partial, failed]
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionResult'
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+tags:
+  - name: Documents
+    description: Fetching AMTP documents
+  - name: Actions
+    description: Action and batch execution
