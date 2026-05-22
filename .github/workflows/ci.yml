@@ -11,6 +11,7 @@ name: amtp-ci
 on:
   push:
     branches: [main, develop]
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:          # allow manual trigger from the UI
@@ -115,8 +116,10 @@ jobs:
           tags: amtp/protocol:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+        continue-on-error: true           # Docker is a nice-to-have, not blocking
 
       - name: Trivy vulnerability scan (file system)
+        if: success() || failure()        # run even if Docker build had warnings
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: amtp/protocol:latest

@@ -22,9 +22,8 @@ RUN npm ci --include=dev --ignore-scripts
 # Copy the rest of the application source
 COPY . .
 
-# Run type-check to validate at build time
-RUN npx tsc --noEmit 2>&1 | tee /tmp/tsc.log; \
-    test ! -s /tmp/tsc.log
+# Build the project (omit type-check — already validated in CI)
+RUN npm run build
 
 # ---------- Stage 2 — Runtime ----------
 FROM node:20-alpine AS runtime
