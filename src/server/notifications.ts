@@ -83,8 +83,8 @@ export class NotificationBus extends EventEmitter {
       if (!this.sseClients.has(type)) {
         this.sseClients.set(type, new Set());
       }
-      const set = this.sseClients.get(type);
-      if (set) set.add(send);
+      const set = this.sseClients.get(type)!;
+      set.add(send);
 
       unsubs.push(() => {
         set.delete(send);
