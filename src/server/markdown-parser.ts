@@ -22,10 +22,7 @@ import {
   Skill,
 } from "../types/amtp.types";
 import {
-  validateTextField,
-  sanitizeHtml,
   DEFAULT_MAX_BODY_SIZE,
-  SecurityError,
   sanitizeActionId,
   sanitizeEndpoint,
   sanitizeHttpMethod,

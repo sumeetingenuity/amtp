@@ -15,7 +15,6 @@ import {
   AMTPDocument,
   Action,
   Session,
-  Policy,
   PolicyCondition,
   StatusCode,
   ErrorCode,

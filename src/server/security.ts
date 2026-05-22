@@ -301,7 +301,7 @@ export function csrfHeaderName(): string {
  * Note: The actual token-to-session binding is managed externally (see SessionManager).
  * This generates the token value only.
  */
-export function generateCsrfToken(sessionId: string): string {
+export function generateCsrfToken(_sessionId: string): string {
   return `csrf_${secureRandomString(16)}`;
 }
 
@@ -332,7 +332,7 @@ export function sanitizeActionId(raw: string): string {
   }
 
   // Relaxed path for common copy-paste (brackets + spaces only)
-  const relaxed = trimmed.replace(/[\[\]\s]/g, "").toUpperCase();
+  const relaxed = trimmed.replace(/[[\]\s]/g, "").toUpperCase();
   if (/^[A-Z][A-Z0-9_]{0,63}$/.test(relaxed)) {
     return relaxed;
   }

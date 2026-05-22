@@ -345,7 +345,8 @@ export class SearchIndexer {
         if (!this.index.has(keyword)) {
           this.index.set(keyword, []);
         }
-        this.index.get(keyword)!.push(page);
+        const entry = this.index.get(keyword);
+        if (entry) entry.push(page);
       }
     }
   }

@@ -18,7 +18,7 @@ export class AMTPQLSyntaxError extends Error {
 
 export class AMTPQLParser {
   private query: string;
-  private pos: number = 0;
+  private pos = 0;
   private len: number;
 
   constructor(query: string) {

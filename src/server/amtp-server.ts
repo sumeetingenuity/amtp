@@ -30,9 +30,6 @@ import {
 } from "../types/amtp.types";
 import {
   generateSecureSessionId,
-  generateSecureRequestId,
-  validateUrl,
-  sanitizeHtml,
   DEFAULT_SESSION_TIMEOUT_MS,
   MAX_SESSION_LIFETIME_MS,
   AMTP_SECURITY_HEADERS,
@@ -43,7 +40,6 @@ import {
   isValidCsrfToken,
   SecurityError,
   DEFAULT_MAX_BODY_SIZE,
-  readBodyWithLimit,
 } from "./security";
 import { parseAMTPQL, AMTPQLSyntaxError } from "./amtp-ql-parser";
 import { AMTPQLExecutor } from "./amtp-ql-executor";
@@ -220,7 +216,6 @@ export class AMTPResponseBuilder {
       case MarkdownNodeType.PARAGRAPH:
         return node.content || "";
       case MarkdownNodeType.IMAGE: {
-        const alt = node.alt ? `alt="${node.alt}"` : "";
         const title = node.title ? ` "${node.title}"` : "";
         return `![${node.alt || ""}](${node.url || ""}${title})`;
       }
@@ -498,7 +493,7 @@ export class AMTPMiddlewareFactory {
       err: Error,
       req: Request,
       res: Response,
-      next: NextFunction
+      _next: NextFunction
     ) => {
       if (err instanceof AMTPError) {
         const safeErr = err as AMTPError;

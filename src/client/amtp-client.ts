@@ -5,14 +5,11 @@
 
 import crypto from "crypto";
 import {
-  AMTPPageRequest,
   AMTPActionRequest,
   AMTPDocument,
   Action,
   Form,
   FormSubmission,
-  Session,
-  ServerSentEvent,
   StreamUpdate,
   StatusCode,
   HTTPMethod,
@@ -542,20 +539,20 @@ export class AutonomousAgent {
       console.log(
         `📍 Step 2: Viewing product: ${targetProduct.label} — ${targetProduct.description || ""}`
       );
-      const product = await this.client.navigate(targetProduct.endpoint || "/");
+      await this.client.navigate(targetProduct.endpoint || "/");
 
-      // Step 4: Add to cart
+      // Step 3: Add to cart
       console.log("📍 Step 3: Adding to cart...");
       await this.client.executeAction("add_to_cart", {
         productId: targetProduct.id,
         quantity: 1,
       });
 
-      // Step 5: Navigate to checkout
+      // Step 4: Navigate to checkout
       console.log("📍 Step 4: Proceeding to checkout...");
-      const cart = await this.client.navigate("/cart");
+      await this.client.navigate("/cart");
 
-      // Step 6: Get checkout form
+      // Step 5: Get checkout form
       const forms = await this.client.getForms("/checkout");
       console.log(`📍 Step 5: Found ${forms.length} forms`);
 
@@ -582,7 +579,7 @@ export class AutonomousAgent {
 
       // Access dashboard
       console.log("📊 Loading dashboard...");
-      const dashboard = await this.client.navigate("/dashboard");
+      await this.client.navigate("/dashboard");
 
       // Monitor updates
       console.log("🔔 Listening for updates...");
