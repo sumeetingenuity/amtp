@@ -144,6 +144,43 @@ console.log(`Crawled ${pages.length} pages`);
 const results = crawler.search("macbook pro");
 ```
 
+### Migrating Existing Backends to AMTP
+
+Add AMTP to your existing Express/Fastify backend without rewriting routes.
+Define a data-to-AMTP schema, wrap your handler — agents get AMTP markdown,
+browsers get HTML, API clients get JSON — all from one route.
+
+```typescript
+import { amtp } from "@amtp/protocol";
+
+// 1. Define how your data maps to AMTP
+const ProductPage = amtp.define<Product>({
+  title: (p) => p.name,
+  description: (p) => `$${p.price} · ${p.inStock ? "In Stock" : "Out of Stock"}`,
+  fields: [
+    { label: "Category", value: (p) => p.category },
+    { label: "Rating", value: (p) => `${p.rating}/5` },
+  ],
+  actions: [
+    { id: "BUY", label: "Buy", method: "POST", endpoint: (p) => `/api/products/${p.id}/buy" },
+    { id: "REVIEWS", label: "Reviews", method: "GET", endpoint: (p) => `/products/${p.id}/reviews" },
+  ],
+});
+
+// 2. Wrap your route handler — agents discover actions, browsers see HTML
+router.get("/products/:id", amtp.route(ProductPage, async (req) => {
+  return await db.findOne(req.params.id);
+}));
+
+// No migration? Use amtp.respond() inside existing res.json() handlers:
+router.get("/products/:id", async (req, res) => {
+  const product = await db.findOne(req.params.id);
+  res.json(product);
+  // Later, add one line:
+  // if (req.headers.accept?.includes("amtp")) amtp.respond(res, product, ProductPage);
+});
+```
+
 ## 📚 Documentation
 
 ### Core Specifications

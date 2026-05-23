@@ -8,6 +8,19 @@ export { PermissionGuard } from "./server/permissions";
 export type { PermissionCheckResult, PermissionGuardConfig } from "./server/permissions";
 export { WebSessionAdapter } from "./server/web-session-adapter";
 export type { AMTPUserProfile, UserResolver, WebSessionAdapterConfig } from "./server/web-session-adapter";
+export { AMTPSchema } from "./server/amtp-schema";
+export type { AMTPSchemaDefinition, AMTPFieldDef, AMTPActionDef, AMTPLinkDef } from "./server/amtp-schema";
+export { route as amtpRoute, respond as amtpRespond } from "./server/amtp-route";
+
+import { AMTPSchema } from "./server/amtp-schema";
+import { route, respond } from "./server/amtp-route";
+import type { AMTPSchemaDefinition } from "./server/amtp-schema";
+
+export const amtp = {
+  define: <T>(def: AMTPSchemaDefinition<T>) => new AMTPSchema<T>(def),
+  route,
+  respond,
+};
 export { AMTPClient, AMTPMarkdownParser as ClientMarkdownParser, AutonomousAgent } from "./client/amtp-client";
 export type { AMTPClientConfig } from "./client/amtp-client";
 export { AMTPCrawler, SearchIndexer } from "./crawler/amtp-crawler";
