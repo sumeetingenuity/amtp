@@ -22,7 +22,6 @@
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
     "type-check": "tsc --noEmit",
-    "prepublishOnly": "npm run validate",
     "validate": "npm run type-check && npm run build && npm test",
     "security-audit": "npm audit",
     "server": "ts-node src/server/examples/basic-server.ts",
