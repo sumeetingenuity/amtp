@@ -12,6 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 conventional_commits = true
 filter_unconventional = false
 
-[git.limit_commits]
-scope_limit = 0
-parse_compact = true
+limit_commits = 0
