@@ -21,13 +21,13 @@ Enable AI agents to browse the web efficiently by providing:
 ### Installation
 
 ```bash
-npm install @amtp/sdk
+npm install @amtp/protocol
 ```
 
 ### Using the Agent Client
 
 ```typescript
-import { AMTPClient } from "@amtp/sdk";
+import { AMTPClient } from "@amtp/protocol";
 
 const client = new AMTPClient({
   baseUrl: "https://example.com",
@@ -60,7 +60,7 @@ client.streamUpdates("/api/stream/order", (update) => {
 ### Building an AMTP Server
 
 ```typescript
-import { AMTPServer } from "@amtp/sdk";
+import { AMTPServer } from "@amtp/protocol";
 
 const server = new AMTPServer({
   port: 3000,
@@ -92,7 +92,7 @@ server.start();
 ### Crawling AMTP Sites
 
 ```typescript
-import { AMTPCrawler } from "@amtp/sdk";
+import { AMTPCrawler } from "@amtp/protocol";
 
 const crawler = new AMTPCrawler({
   baseUrl: "https://example.com",
@@ -309,7 +309,7 @@ Server adapts response:
 
 ```bash
 # 1. Install SDK
-npm install @amtp/sdk
+npm install @amtp/protocol
 
 # 2. Follow server implementation guide
 # See: src/server/amtp-server.ts
@@ -325,7 +325,7 @@ npm start
 
 ```bash
 # 1. Install SDK
-npm install @amtp/sdk
+npm install @amtp/protocol
 
 # 2. Create client
 const client = new AMTPClient({ baseUrl: "..." });

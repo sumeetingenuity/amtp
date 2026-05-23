@@ -80,10 +80,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/amtp/protocol"
+    "url": "https://github.com/sumeetingenuity/amtp"
   },
   "bugs": {
-    "url": "https://github.com/amtp/protocol/issues"
+    "url": "https://github.com/sumeetingenuity/amtp/issues"
   },
-  "homepage": "https://github.com/amtp/protocol#readme"
+  "homepage": "https://github.com/sumeetingenuity/amtp#readme"
 }
