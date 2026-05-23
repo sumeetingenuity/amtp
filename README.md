@@ -89,6 +89,43 @@ server.register("GET", "/products/:id", async (req, res) => {
 server.start();
 ```
 
+### Authenticated Agents (Website Chatbot)
+
+For website chatbots and agents that act on behalf of logged-in users, AMTP
+auto-bridges your existing web auth — no separate token ceremony for end users.
+
+```typescript
+import { AMTPServer, WebSessionAdapter, SessionManager } from "@amtp/protocol";
+
+const server = new AMTPServer({ port: 3000 });
+
+const adapter = new WebSessionAdapter({
+  sessionManager: server.getSessionManager(),
+  resolveUser: (req) => {
+    // req.user is populated by Passport, Express session, JWT, etc.
+    if (!req.user) return null;
+    return {
+      id: req.user.id,
+      username: req.user.displayName,
+      role: req.user.role,
+      // Only fields you project here reach the agent — never raw secrets
+    };
+  },
+});
+
+// Mount AFTER your auth middleware (Passport, session, etc.)
+server.useWebSession(adapter);
+
+server.register("POST", "/api/orders", (req, res) => {
+  const session = (req as any).amtpContext?.session;
+  // session.userId is the authenticated user —
+  // no token config needed from the end user
+  res.json({ userId: session.userId });
+});
+
+server.start();
+```
+
 ### Crawling AMTP Sites
 
 ```typescript
@@ -137,11 +174,15 @@ AMTP/
 │   │   └── amtp.types.ts           # TypeScript type definitions
 │   ├── server/
 │   │   ├── amtp-server.ts          # Express server & middleware
+│   │   ├── web-session-adapter.ts  # Web auth → AMTP session bridge
 │   │   └── markdown-parser.ts      # AMTP markdown parser
 │   ├── client/
 │   │   └── amtp-client.ts          # Agent client SDK
 │   └── crawler/
 │       └── amtp-crawler.ts         # Website crawler & indexer
+├── reference/
+│   ├── server/                     # Runnable demo server (for developers)
+│   └── client/                     # Runnable demo client (for developers)
 ├── reference-implementations/
 │   └── EXAMPLES.md                 # Real-world examples
 ├── docs/                           # Additional documentation
@@ -222,6 +263,7 @@ AMTP includes built-in security features:
 
 - **Input Validation** - Type, format, range, injection prevention
 - **Authentication** - Session tokens, JWT, Bearer tokens, API keys
+- **Auto-Session Bridge** - Derives AMTP sessions from existing web auth; raw `req.user` is never exposed to agents/LLMs
 - **Authorization** - Permission-based action execution
 - **CSRF Protection** - Token-based protection
 - **Rate Limiting** - Per-agent, per-action rate limits

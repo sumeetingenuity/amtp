@@ -6,6 +6,8 @@ export { AMTPQLExecutor, AMTPQLExecutionError, executeAMTPQL } from "./server/am
 export { NotificationBus, notificationBus } from "./server/notifications";
 export { PermissionGuard } from "./server/permissions";
 export type { PermissionCheckResult, PermissionGuardConfig } from "./server/permissions";
+export { WebSessionAdapter } from "./server/web-session-adapter";
+export type { AMTPUserProfile, UserResolver, WebSessionAdapterConfig } from "./server/web-session-adapter";
 export { AMTPClient, AMTPMarkdownParser as ClientMarkdownParser, AutonomousAgent } from "./client/amtp-client";
 export type { AMTPClientConfig } from "./client/amtp-client";
 export { AMTPCrawler, SearchIndexer } from "./crawler/amtp-crawler";

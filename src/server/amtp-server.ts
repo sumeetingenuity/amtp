@@ -656,6 +656,7 @@ export class AMTPServer {
   private config: AMTPServerConfig;
   private middlewareFactory: AMTPMiddlewareFactory;
   private router: Router;
+  private customMiddleware: Array<(req: Request, res: Response, next: NextFunction) => void> = [];
 
   constructor(config: Partial<AMTPServerConfig> = {}) {
     this.app = express();
@@ -715,9 +716,6 @@ export class AMTPServer {
     if (this.config.csrfProtection !== false) {
       this.app.use(this.middlewareFactory.csrfGuard());
     }
-
-    // AMTP context
-    this.app.use(this.middlewareFactory.middleware());
   }
 
   /**
@@ -762,11 +760,38 @@ export class AMTPServer {
   }
 
   /**
+   * Mount custom middleware before routes.
+   * Runs after AMTP context but before route handlers.
+   */
+  use(mw: (req: Request, res: Response, next: NextFunction) => void): void {
+    this.customMiddleware.push(mw);
+  }
+
+  /**
+   * Convenience: mount a WebSessionAdapter to auto-bridge web auth to AMTP.
+   * Equivalent to `server.use(adapter.autoSession())`.
+   */
+  useWebSession(adapter: { autoSession: () => (req: Request, res: Response, next: NextFunction) => void }): void {
+    this.use(adapter.autoSession());
+  }
+
+  /**
    * Return the fully configured Express app with routes and middleware mounted.
    * Does NOT start the HTTP listener — useful for testing with supertest.
    */
   getConfiguredApp(): Express {
+    // Mount AMTP context (was deferred from setupMiddleware to allow injection)
+    this.app.use(this.middlewareFactory.middleware());
+
+    // Mount user-added middleware (web session bridge, custom auth, etc.)
+    for (const mw of this.customMiddleware) {
+      this.app.use(mw);
+    }
+
+    // Mount routes
     this.app.use("/", this.router);
+
+    // Response sender and error handler
     this.app.use(this.middlewareFactory.responseSender());
     this.app.use(this.middlewareFactory.errorHandler());
     return this.app;
