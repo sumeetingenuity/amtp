@@ -49,7 +49,7 @@ export interface AMTPSchemaDefinition<T> {
 export class AMTPSchema<T> {
   constructor(private def: AMTPSchemaDefinition<T>) {}
 
-  render(data: T, path: string = "/"): AMTPDocument {
+  render(data: T, path = "/"): AMTPDocument {
     const resolve = <R>(val: R | ((d: T) => R)): R =>
       typeof val === "function" ? (val as (d: T) => R)(data) : val;
 

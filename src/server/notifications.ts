@@ -80,10 +80,11 @@ export class NotificationBus extends EventEmitter {
     const unsubs: Array<() => void> = [];
 
     types.forEach((type) => {
-      if (!this.sseClients.has(type)) {
-        this.sseClients.set(type, new Set());
+      const existing = this.sseClients.get(type);
+      const set = existing ?? new Set();
+      if (!existing) {
+        this.sseClients.set(type, set);
       }
-      const set = this.sseClients.get(type)!;
       set.add(send);
 
       unsubs.push(() => {
