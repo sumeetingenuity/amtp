@@ -62,6 +62,25 @@ export class PermissionGuard {
     doc: AMTPDocument,
     session?: Session
   ): PermissionCheckResult {
+    // Check OAuth scope requirement (v1.1)
+    const requiredScope = action.authScope;
+    if (requiredScope) {
+      if (!session) {
+        return {
+          allowed: false,
+          reason: `OAuth scope required: ${requiredScope}`,
+        };
+      }
+      const grantedScopes = session.capabilities ?? [];
+      if (!grantedScopes.includes(requiredScope)) {
+        return {
+          allowed: false,
+          reason: `Missing required OAuth scope: ${requiredScope}`,
+          requiredPermissions: [requiredScope],
+        };
+      }
+    }
+
     // If the action doesn't declare required permissions, policy is optional
     const requiredPerms = action.permissions;
     if (!requiredPerms || requiredPerms.length === 0) {

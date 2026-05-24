@@ -208,6 +208,8 @@ export interface AMTPDocument {
   policies?: Policy[];
   /** Declared skills (bundled capabilities) for this document (v2.0) */
   skills?: Skill[];
+  /** OAuth 2.0 delegation configuration for cross-origin agent access */
+  auth?: AMTPAuth;
 }
 
 /** Document metadata */
@@ -265,6 +267,8 @@ export interface Action {
   endpoint: string;
   parameters?: ActionParameter[];
   requiresAuthentication?: boolean;
+  /** OAuth scope required to execute this action (e.g. "orders:write") */
+  authScope?: string;
   idempotent?: boolean;
   timeoutMs?: number;
   expectedOutcomes?: string[];
@@ -353,6 +357,33 @@ export interface Skill {
   /** IDs of skills that must be acquired first */
   requires?: string[];
   /** Arbitrary metadata (pricing, reputation, etc.) */
+  metadata?: Record<string, unknown>;
+}
+
+/* ============================================================================
+   OAUTH 2.0 DELEGATION TYPES (v1.1)
+   ========================================================================== */
+
+/**
+ * OAuth 2.0 provider configuration advertised in `amtp-auth` blocks.
+ * Agents use this to initiate delegated authorization flows on behalf of users.
+ */
+export interface AMTPAuth {
+  /** OAuth provider name (e.g. "amazon", "google", or a custom label) */
+  provider: string;
+  /** OAuth 2.0 authorization endpoint */
+  authorizationUrl: string;
+  /** OAuth 2.0 token endpoint */
+  tokenUrl: string;
+  /** Available scopes the agent can request */
+  scopes: string[];
+  /** Requires PKCE (recommended for public clients like chatbots) */
+  pkce?: boolean;
+  /** Optional token introspection endpoint */
+  introspectionUrl?: string;
+  /** Optional URL for the user to manage authorized apps */
+  revokeUrl?: string;
+  /** Arbitrary metadata (documentation, branding, etc.) */
   metadata?: Record<string, unknown>;
 }
 

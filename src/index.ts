@@ -11,6 +11,8 @@ export type { AMTPUserProfile, UserResolver, WebSessionAdapterConfig } from "./s
 export { AMTPSchema } from "./server/amtp-schema";
 export type { AMTPSchemaDefinition, AMTPFieldDef, AMTPActionDef, AMTPLinkDef } from "./server/amtp-schema";
 export { route as amtpRoute, respond as amtpRespond } from "./server/amtp-route";
+export { AMTPAuthService } from "./server/amtp-auth-service";
+export type { VerifiedToken, TokenVerifier, AMTPAuthServiceConfig } from "./server/amtp-auth-service";
 
 import { AMTPSchema } from "./server/amtp-schema";
 import { route, respond } from "./server/amtp-route";
@@ -109,6 +111,7 @@ export type {
   Policy,
   PolicyCondition,
   Skill,
+  AMTPAuth,
   PageRequestOptions,
   PageResponseOptions,
   AMTPContext,

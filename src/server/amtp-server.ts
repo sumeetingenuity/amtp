@@ -197,6 +197,13 @@ export class AMTPResponseBuilder {
       md += "\n```\n";
     }
 
+    // Add OAuth auth delegation (v1.1)
+    if (doc.auth) {
+      md += "\n```amtp-auth\n";
+      md += JSON.stringify(doc.auth, null, 2);
+      md += "\n```\n";
+    }
+
     // Add metadata
     if (Object.keys(doc.metadata).length > 0) {
       md += "\n```amtp-meta\n";
@@ -773,6 +780,24 @@ export class AMTPServer {
    */
   useWebSession(adapter: { autoSession: () => (req: Request, res: Response, next: NextFunction) => void }): void {
     this.use(adapter.autoSession());
+  }
+
+  /**
+   * Convenience: mount an AMTPAuthService to enable OAuth 2.0 Bearer token
+   * authentication + register the token introspection endpoint.
+   *
+   * ```ts
+   * server.useAuthService(authService);
+   * ```
+   */
+  useAuthService(
+    authService: {
+      middleware: () => (req: Request, res: Response, next: NextFunction) => Promise<void>;
+      introspectHandler: () => (req: Request, res: Response) => Promise<void>;
+    }
+  ): void {
+    this.use(authService.middleware());
+    this.register("POST", "/amtp/auth/introspect", authService.introspectHandler());
   }
 
   /**

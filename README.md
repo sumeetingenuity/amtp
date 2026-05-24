@@ -181,6 +181,69 @@ router.get("/products/:id", async (req, res) => {
 });
 ```
 
+### Cross-Origin Agent Delegation (OAuth 2.0)
+
+For the future where users interact with any website through a single agent
+(ChatGPT, Claude, DeepSeek, etc.), AMTP supports OAuth 2.0 delegation:
+
+**Server** — advertises auth requirements via the `amtp-auth` block:
+
+```markdown
+# My Orders
+
+[VIEW_ORDER] [CANCEL_ORDER]
+
+```amtp-auth
+{
+  "provider": "example",
+  "authorizationUrl": "https://example.com/oauth/authorize",
+  "tokenUrl": "https://example.com/oauth/token",
+  "scopes": ["orders:read", "orders:write"],
+  "pkce": true,
+  "introspectionUrl": "/amtp/auth/introspect"
+}
+```
+```
+
+**Agent** — discovers the auth block, redirects the user to authorize, then
+uses the Bearer token for authenticated requests:
+
+```typescript
+import { AMTPAuthService } from "@amtp/protocol";
+
+const authService = new AMTPAuthService({
+  sessionManager: server.getSessionManager(),
+  verifier: {
+    verify: async (token) => {
+      const payload = jwt.verify(token, process.env.JWT_SECRET!);
+      return {
+        userId: payload.sub,
+        username: payload.username,
+        scopes: (payload.scope || "").split(" "),
+      };
+    },
+  },
+});
+
+// Mounts auth middleware + registers POST /amtp/auth/introspect
+server.useAuthService(authService);
+
+// Protected route — requires "orders:read" scope
+server.register("GET", "/api/orders", (req, res) => {
+  const session = (req as any).amtpContext?.session;
+  if (!session?.capabilities.includes("orders:read")) {
+    return res.status(403).json({ error: "insufficient scope" });
+  }
+  res.json({ orders: fetchOrders(session.userId) });
+});
+```
+
+**Security model:**
+- Actions declare required scopes via `authScope` (e.g. `authScope: "orders:write"`)
+- `PermissionGuard` checks the session's capabilities against the action's `authScope`
+- Token verification is pluggable — JWT, opaque tokens, or custom verifiers
+- No raw tokens or secrets are ever exposed to the AMTP context
+
 ## 📚 Documentation
 
 ### Core Specifications

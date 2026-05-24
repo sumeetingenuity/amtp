@@ -8,6 +8,7 @@ import {
   MarkdownNode,
   MarkdownNodeType,
   Action,
+  AMTPAuth,
   Form,
   FormField,
   Link,
@@ -54,6 +55,7 @@ export class AMTPMarkdownParser {
     const permissions: Permission[] = [];
     const policies: Policy[] = [];
     const skills: Skill[] = [];
+    let auth: AMTPAuth | undefined;
     let pagination: Pagination | undefined;
 
     // Parse document body
@@ -88,6 +90,10 @@ export class AMTPMarkdownParser {
         const { items, nextIdx } = this.parseSkillBlock(lines, lineIdx);
         skills.push(...items);
         lineIdx = nextIdx;
+      } else if (line.startsWith("```amtp-auth")) {
+        const result = this.parseAuthBlock(lines, lineIdx);
+        auth = result.auth;
+        lineIdx = result.nextIdx;
       } else if (line.startsWith("## Actions")) {
         const { items, nextIdx } = this.parseActionList(lines, lineIdx + 1);
         actions.push(...items);
@@ -145,6 +151,7 @@ export class AMTPMarkdownParser {
       ...((permissions.length > 0) && { permissions }),
       ...((policies.length > 0) && { policies }),
       ...((skills.length > 0) && { skills }),
+      ...(auth && { auth }),
     };
   }
 
@@ -479,6 +486,26 @@ export class AMTPMarkdownParser {
 
   private parseSkillBlock(lines: string[], startIdx: number): { items: Skill[]; nextIdx: number } {
     return this.parseJsonBlock<Skill>(lines, startIdx);
+  }
+
+  private parseAuthBlock(lines: string[], startIdx: number): { auth: AMTPAuth | undefined; nextIdx: number } {
+    let idx = startIdx + 1;
+    let jsonStr = "";
+
+    while (idx < lines.length && !lines[idx].includes("```")) {
+      if (jsonStr.length > DEFAULT_MAX_BODY_SIZE) {
+        return { auth: undefined, nextIdx: lines.length };
+      }
+      jsonStr += lines[idx] + "\n";
+      idx++;
+    }
+
+    try {
+      const data = JSON.parse(jsonStr) as AMTPAuth;
+      return { auth: data, nextIdx: idx + 1 };
+    } catch {
+      return { auth: undefined, nextIdx: idx + 1 };
+    }
   }
 
   private determineLinkType(url: string): LinkType {

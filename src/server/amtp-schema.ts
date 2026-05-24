@@ -3,6 +3,7 @@ import {
   MarkdownNode,
   MarkdownNodeType,
   Action,
+  AMTPAuth,
   HTTPMethod,
   LinkType,
   ParameterType,
@@ -21,6 +22,7 @@ export interface AMTPActionDef<T> {
   endpoint: string | ((data: T) => string);
   description?: string;
   requiresAuthentication?: boolean;
+  authScope?: string;
   parameters?: Array<{
     name: string;
     type: string;
@@ -41,6 +43,7 @@ export interface AMTPSchemaDefinition<T> {
   actions?: AMTPActionDef<T>[];
   links?: AMTPLinkDef<T>[];
   metadata?: ((data: T) => Record<string, unknown>) | Record<string, unknown>;
+  auth?: AMTPAuth | ((data: T) => AMTPAuth);
 }
 
 export class AMTPSchema<T> {
@@ -77,6 +80,7 @@ export class AMTPSchema<T> {
       endpoint: resolve(a.endpoint),
       description: a.description,
       requiresAuthentication: a.requiresAuthentication,
+      authScope: a.authScope,
       parameters: a.parameters?.map((p) => ({
         ...p,
         type: p.type as ParameterType,
@@ -97,6 +101,12 @@ export class AMTPSchema<T> {
         : {}),
     };
 
+    const auth = this.def.auth
+      ? typeof this.def.auth === "function"
+        ? this.def.auth(data)
+        : this.def.auth
+      : undefined;
+
     return {
       type: "document",
       version: "1.0",
@@ -107,6 +117,7 @@ export class AMTPSchema<T> {
       forms: [],
       links,
       metadata,
+      ...(auth && { auth }),
     };
   }
 }

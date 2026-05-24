@@ -214,6 +214,50 @@ server.register("POST", "/api/demo/emit", (req: any, res: any) => {
   res.json({ emitted: event });
 });
 
+// =====================================================
+// v1.1: OAuth 2.0 delegation demo
+// =====================================================
+
+// Protected route — requires "orders:read" OAuth scope
+server.register("GET", "/api/protected/orders", (req: any, res: any) => {
+  const session = (req as any).amtpContext?.session;
+
+  const doc: AMTPDocument = {
+    type: "document",
+    version: "1.0",
+    title: "My Orders",
+    path: "/api/protected/orders",
+    nodes: [
+      { type: MarkdownNodeType.PARAGRAPH, content: `Orders for user: ${session?.userId || "unknown"}` },
+    ],
+    actions: [
+      {
+        id: "VIEW_ORDER",
+        label: "VIEW_ORDER",
+        method: HTTPMethod.POST,
+        endpoint: "/api/protected/orders/view",
+        requiresAuthentication: true,
+        authScope: "orders:read",
+      },
+    ],
+    links: [],
+    metadata: {},
+    forms: [],
+    structured_data: [],
+    // Advertise OAuth provider so agents can request delegated tokens
+    auth: {
+      provider: "example",
+      authorizationUrl: "https://example.com/oauth/authorize",
+      tokenUrl: "https://example.com/oauth/token",
+      scopes: ["orders:read", "orders:write"],
+      pkce: true,
+      introspectionUrl: "/amtp/auth/introspect",
+    },
+  };
+
+  res.json(doc);
+});
+
 // Health
 server.register("GET", "/health", (_req: any, res: any) => {
   res.json({ status: "ok", protocol: "AMTP", version: "1.0" });
