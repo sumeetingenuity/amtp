@@ -1,6 +1,6 @@
 {
   "name": "@amtp/protocol",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "AMTP: Agent Markdown Transfer Protocol - HTTP for the Agentic Web",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
